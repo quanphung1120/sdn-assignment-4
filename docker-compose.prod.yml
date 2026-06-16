@@ -1,7 +1,6 @@
 services:
   mongodb:
     image: mongo:latest
-    container_name: assignment4-mongodb-prod
     restart: always
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
@@ -15,10 +14,9 @@ services:
       context: ./api
       target: production
     image: assignment4-api:prod
-    container_name: assignment4-api-prod
     restart: always
     ports:
-      - "${API_PORT:-8081}:${API_PORT:-8081}"
+      - "${API_PORT:-8081}"
     env_file:
       - .env
     environment:
@@ -33,10 +31,9 @@ services:
       context: ./web
       target: production
     image: assignment4-web:prod
-    container_name: assignment4-web-prod
     restart: always
     ports:
-      - "80:80"
+      - "80"
     depends_on:
       - api
 

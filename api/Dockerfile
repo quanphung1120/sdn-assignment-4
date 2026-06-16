@@ -30,9 +30,8 @@ ENV HOST=0.0.0.0
 COPY package*.json ./
 RUN npm ci --only=production
 
-# Copy built files and config files
+# Copy built files
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/config ./config
 
 # Run as non-root user for security
 USER node

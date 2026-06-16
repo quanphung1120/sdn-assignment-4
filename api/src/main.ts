@@ -1,5 +1,6 @@
 /* eslint-disable no-process-env */
 
+import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
 import logger from 'jet-logger';
@@ -10,6 +11,33 @@ const app = express();
 // Basic middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Setup CORS
+const allowedOrigins = process.env.CORS_ALLOWED_ORIGINS
+  ? process.env.CORS_ALLOWED_ORIGINS.split(',').map((origin) => origin.trim())
+  : [];
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps, curl, or server-to-server)
+      if (!origin) {
+        return callback(null, true);
+      }
+      if (
+        allowedOrigins.includes(origin) ||
+        (process.env.NODE_ENV === 'development' &&
+          origin.startsWith('http://localhost:'))
+      ) {
+        return callback(null, true);
+      }
+      const msg =
+        'The CORS policy for this site does not allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    },
+    credentials: true,
+  }),
+);
 
 // Show routes called in console during development
 if (process.env.NODE_ENV === 'development') {
