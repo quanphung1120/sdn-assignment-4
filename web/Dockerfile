@@ -14,6 +14,8 @@ CMD ["pnpm", "run", "dev", "--host"]
 
 # Builder stage
 FROM base AS builder
+ARG VITE_API_URL
+ENV VITE_API_URL=$VITE_API_URL
 RUN pnpm install --frozen-lockfile
 COPY . .
 RUN pnpm run build

@@ -30,6 +30,8 @@ services:
     build:
       context: ./web
       target: production
+      args:
+        VITE_API_URL: ${VITE_API_URL}
     image: assignment4-web:prod
     restart: always
     ports:
