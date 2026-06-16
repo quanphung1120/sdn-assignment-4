@@ -1,0 +1,55 @@
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: assignment4-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE}
+    volumes:
+      - mongodb_data:/data/db
+
+  api:
+    build:
+      context: ./api
+      target: development
+    image: assignment4-api:dev
+    container_name: assignment4-api
+    restart: unless-stopped
+    ports:
+      - "${API_PORT}:${API_PORT}"
+    env_file:
+      - .env
+    environment:
+      PORT: ${API_PORT}
+      HOST: 0.0.0.0
+    volumes:
+      - ./api:/app
+      - /app/node_modules
+    depends_on:
+      - mongodb
+
+  web:
+    build:
+      context: ./web
+      target: development
+    image: assignment4-web:dev
+    container_name: assignment4-web
+    restart: unless-stopped
+    ports:
+      - "${WEB_PORT}:${WEB_PORT}"
+    env_file:
+      - .env
+    environment:
+      CI: "true"
+    volumes:
+      - ./web:/app
+      - /app/node_modules
+    depends_on:
+      - api
+
+volumes:
+  mongodb_data:

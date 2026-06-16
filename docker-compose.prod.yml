@@ -1,0 +1,44 @@
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: assignment4-mongodb-prod
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE}
+    volumes:
+      - mongodb_data_prod:/data/db
+
+  api:
+    build:
+      context: ./api
+      target: production
+    image: assignment4-api:prod
+    container_name: assignment4-api-prod
+    restart: always
+    ports:
+      - "${API_PORT:-8081}:${API_PORT:-8081}"
+    env_file:
+      - .env
+    environment:
+      PORT: ${API_PORT:-8081}
+      HOST: 0.0.0.0
+      NODE_ENV: production
+    depends_on:
+      - mongodb
+
+  web:
+    build:
+      context: ./web
+      target: production
+    image: assignment4-web:prod
+    container_name: assignment4-web-prod
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - api
+
+volumes:
+  mongodb_data_prod:
