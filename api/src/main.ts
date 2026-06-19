@@ -1,21 +1,19 @@
-/* eslint-disable no-process-env */
-
+import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
 import logger from 'jet-logger';
+import mongoose from 'mongoose';
 import morgan from 'morgan';
+
+import { env } from './config/env';
+import router from './router';
 
 const app = express();
 
-// Basic middleware
 app.use(express.json());
+app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
-
-// Setup CORS
-const allowedOrigins = process.env.CORS_ALLOWED_ORIGINS
-  ? process.env.CORS_ALLOWED_ORIGINS.split(',').map((origin) => origin.trim())
-  : [];
 
 app.use(
   cors({
@@ -25,9 +23,8 @@ app.use(
         return callback(null, true);
       }
       if (
-        allowedOrigins.includes(origin) ||
-        (process.env.NODE_ENV === 'development' &&
-          origin.startsWith('http://localhost:'))
+        env.CORS_ALLOWED_ORIGINS.includes(origin) ||
+        (env.NODE_ENV === 'development' && origin.startsWith('http://localhost:'))
       ) {
         return callback(null, true);
       }
@@ -39,25 +36,25 @@ app.use(
   }),
 );
 
-// Show routes called in console during development
-if (process.env.NODE_ENV === 'development') {
+if (env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
 
-// Security headers in production
-if (process.env.NODE_ENV === 'production') {
+if (env.NODE_ENV === 'production') {
   app.use(helmet());
 }
 
-// Simple health check endpoint
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok' });
-});
+app.use(router);
 
-const port = process.env.PORT || 3000;
-const host = process.env.HOST || 'localhost';
-
-// Start the server
-app.listen(Number(port), host, () => {
-  logger.info(`Express server started on http://${host}:${port}`);
-});
+mongoose
+  .connect(env.MONGODB_URI)
+  .then(() => {
+    logger.info('Connected to MongoDB');
+    app.listen(env.PORT, env.HOST, () => {
+      logger.info(`Express server started on http://${env.HOST}:${env.PORT}`);
+    });
+  })
+  .catch((err: unknown) => {
+    logger.err(`MongoDB connection error: ${String(err)}`);
+    process.exit(1);
+  });

@@ -5,7 +5,7 @@
     "build": "shx rm -rf dist && npm run lint && tsc --project tsconfig.prod.json",
     "clean-install": "rm -rf ./node_modules && rm -r package-lock.json && npm i",
     "dev": "nodemon --exec ts-node ./src/main --watch ./src --ext .ts",
-    "lint": "eslint .",
+    "lint": "eslint . --cache --cache-location node_modules/.cache/eslint/",
     "format": "prettier --write .",
     "start": "node ./dist/main.js",
     "type-check": "tsc -b --noEmit"
@@ -17,6 +17,8 @@
     "@src": "dist"
   },
   "dependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "dayjs": "^1.11.21",
@@ -26,10 +28,13 @@
     "jet-logger": "^2.2.3",
     "jet-paths": "^3.1.1",
     "jet-validators": "^2.3.1",
+    "jose": "^6.2.3",
     "jsonfile": "^6.2.1",
     "module-alias": "^2.3.4",
+    "mongoose": "^9.7.0",
     "morgan": "^1.11.0",
-    "tspo": "^1.0.7"
+    "tspo": "^1.0.7",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
