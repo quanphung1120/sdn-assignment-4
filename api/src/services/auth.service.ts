@@ -1,5 +1,9 @@
+import bcrypt from 'bcryptjs';
+
 import { generateToken } from '../lib/authentication';
 import { UserModel } from '../models/User';
+
+const SALT_ROUNDS = 10;
 
 export interface RegisterInput {
   username: string;
@@ -57,7 +61,12 @@ export async function register(input: RegisterInput): Promise<AuthResult> {
     throw new UsernameAlreadyTakenError();
   }
 
-  const user = await UserModel.create({ username, password, isAdmin });
+  const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+  const user = await UserModel.create({
+    username,
+    password: hashedPassword,
+    isAdmin,
+  });
   return issueAuthResult(user);
 }
 
@@ -65,7 +74,12 @@ export async function login(input: LoginInput): Promise<AuthResult> {
   const { username, password } = input;
 
   const user = await UserModel.findOne({ username });
-  if (!user || user.password !== password) {
+  if (!user) {
+    throw new InvalidCredentialsError();
+  }
+
+  const passwordMatches = await bcrypt.compare(password, user.password);
+  if (!passwordMatches) {
     throw new InvalidCredentialsError();
   }
 
